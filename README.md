@@ -16,77 +16,11 @@ Firebase バックエンドサービスを提供するリポジトリです。�
 - Firestore データベース
 - Node.js
 
-## セットアップ
-
-### 前提条件
-
-- Node.js (v14以上)
-- npm
-- Firebase CLI (`npm install -g firebase-tools`)
-
-### 開発環境のセットアップ
-
-1. リポジトリをクローン
-
-```bash
-git clone https://github.com/your-username/arknights-viewer-backend.git
-cd arknights-viewer-backend
-```
-
-2. 依存パッケージのインストール
-
-```bash
-npm install
-cd functions
-npm install
-```
-
-3. Firebaseへのログイン
-
-```bash
-firebase login
-```
-
-4. プロジェクトを選択
-
-```bash
-firebase use your-project-id
-```
-
-### ローカルでのテスト
-
-Firebase エミュレータを使用してローカルでテストできます：
-
-```bash
-firebase emulators:start
-```
-
-Firebase エミュレータUI: http://localhost:4000
-
-## デプロイ
-
-### 手動デプロイ
-
-```bash
-firebase deploy
-```
-
-特定のサービスだけをデプロイする場合：
-
-```bash
-firebase deploy --only functions
-firebase deploy --only firestore:rules
-```
-
-### CI/CDによる自動デプロイ
-
-GitHub Actionsを使用して、mainブランチへのプッシュ時に自動的にデプロイされます。
-
 ## API仕様
 
 ### データ保存API
 
-**エンドポイント:** POST https://{region}-{project-id}.cloudfunctions.net/saveCharacterDataHttp
+**エンドポイント:** POST https://asia-northeast1-arknights-sharing-view.cloudfunctions.net/saveCharacterDataHttp
 
 **リクエスト形式:**
 ```json
@@ -121,7 +55,7 @@ GitHub Actionsを使用して、mainブランチへのプッシュ時に自動�
 
 ### データ取得API
 
-**エンドポイント:** GET https://{region}-{project-id}.cloudfunctions.net/getCharacterDataHttp?id={dataId}
+**エンドポイント:** GET https://asia-northeast1-arknights-sharing-view.cloudfunctions.net/getCharacterDataHttp?id={dataId}
 
 **レスポンス形式:**
 ```json
