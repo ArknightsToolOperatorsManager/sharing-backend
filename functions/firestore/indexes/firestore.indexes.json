@@ -1,0 +1,13 @@
+﻿{
+    "indexes": [
+      {
+        "collectionGroup": "characterData",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "expiresAt", "order": "ASCENDING" },
+          { "fieldPath": "createdAt", "order": "ASCENDING" }
+        ]
+      }
+    ],
+    "fieldOverrides": []
+  }

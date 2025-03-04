@@ -1,0 +1,27 @@
+﻿# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Functions
+node_modules/
+.runtimeconfig.json
+*.log
+.env
+.env.*
+coverage/
+lib/
+dist/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# OS
+.DS_Store
+Thumbs.db
