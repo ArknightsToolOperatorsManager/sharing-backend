@@ -1,6 +1,7 @@
 ﻿name: Deploy to Firebase
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,7 +10,6 @@ on:
       - 'firestore/**'
       - 'firebase.json'
       - '.github/workflows/deploy.yml'
-    workflow_dispatch:
 
 jobs:
   deploy:
