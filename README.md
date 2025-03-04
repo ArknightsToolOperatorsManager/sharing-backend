@@ -55,6 +55,7 @@ Firebase バックエンドサービスを提供するリポジトリです。�
 
 ### データ取得API
 
+※現在こちらは利用できません。
 **エンドポイント:** GET https://asia-northeast1-arknights-sharing-view.cloudfunctions.net/getCharacterDataHttp?id={dataId}
 
 **レスポンス形式:**
