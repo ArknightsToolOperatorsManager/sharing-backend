@@ -1,4 +1,4 @@
-﻿// キャラクターデータ関連のAPI実装
+// キャラクターデータ関連のAPI実装
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
