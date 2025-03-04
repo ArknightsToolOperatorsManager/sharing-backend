@@ -23,13 +23,46 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Debug directory structure
+        run: |
+          pwd
+          ls -la
+          
+      - name: Create ESLint configuration
+        run: |
+          cd functions
+          if [ ! -f ".eslintrc.js" ]; then
+            echo "Creating .eslintrc.js"
+            cat > .eslintrc.js << EOF
+module.exports = {
+  root: true,
+  env: {
+    es6: true,
+    node: true,
+  },
+  extends: [
+    "eslint:recommended",
+  ],
+  rules: {
+    // 基本的なルールのみを適用
+    "no-unused-vars": "warn",
+  },
+  parserOptions: {
+    ecmaVersion: 2020,
+  },
+};
+EOF
+          fi
+          cd ..
+
+      - name: Create Service Account Key File
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/service-account.json
+        
       - name: Install dependencies for functions
         run: |
           cd functions
           npm install
-
-      - name: Create Service Account Key File
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/service-account.json
+          cd ..
         
       - name: Deploy to Firebase
         run: |
