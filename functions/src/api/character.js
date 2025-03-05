@@ -14,32 +14,65 @@ const { generateUniqueId } = require('../utils/idGenerator');
 exports.saveCharacterData = functions.https.onCall(async (data, context) => {
   try {
     // 入力データのバリデーション
-    if (!data || !data.data) {
+    if (!data) {
       throw new functions.https.HttpsError('invalid-argument', 'データが提供されていません');
     }
     
+    // IDが提供されているか確認（更新ケース）
+    const existingId = data.id;
+    // データ部分の取得
+    const characterData = data.data || data;
+    
     // データを処理して必要な情報だけを抽出
-    const processedData = processOperatorData(data.data);
+    const processedData = processOperatorData(characterData);
     
     // データが空の場合はエラー
     if (processedData.length === 0) {
       throw new functions.https.HttpsError('invalid-argument', '有効なキャラクターデータがありません');
     }
     
-    // ユニークなIDを生成（6文字）
-    const uniqueId = await generateUniqueId();
+    let docId;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    const fiveYearsLater = admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 5) // 5年後
+    );
     
-    // Firestoreにデータを保存
-    await db.collection('characterData').doc(uniqueId).set({
-      characters: processedData,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(
-        new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 2) // 2年後
-      )
-    });
+    if (existingId) {
+      // 既存IDが提供された場合は、そのドキュメントが存在するか確認
+      const docRef = db.collection('characterData').doc(existingId);
+      const doc = await docRef.get();
+      
+      if (doc.exists) {
+        // ドキュメントが存在する場合は更新
+        await docRef.update({
+          characters: processedData,
+          updatedAt: now,
+          expiresAt: fiveYearsLater
+        });
+        docId = existingId;
+      } else {
+        // 指定されたIDが存在しない場合は新規作成
+        docId = await generateUniqueId();
+        await db.collection('characterData').doc(docId).set({
+          characters: processedData,
+          createdAt: now,
+          updatedAt: now,
+          expiresAt: fiveYearsLater
+        });
+      }
+    } else {
+      // IDが提供されていない場合は新規作成
+      docId = await generateUniqueId();
+      await db.collection('characterData').doc(docId).set({
+        characters: processedData,
+        createdAt: now,
+        updatedAt: now,
+        expiresAt: fiveYearsLater
+      });
+    }
     
-    // 生成されたIDを返す
-    return { id: uniqueId };
+    // 生成または使用されたIDを返す
+    return { id: docId };
   } catch (error) {
     console.error('データ保存エラー:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -86,28 +119,64 @@ exports.handleSaveRequest = async (req, res) => {
       return res.status(400).send({ error: 'リクエストにデータがありません' });
     }
     
+    // IDが提供されているか確認（更新ケース）
+    const existingId = req.body.id;
+    // データ部分の取得（idがプロパティとして含まれる場合とそうでない場合に対応）
+    const characterData = req.body.data || req.body;
+    
     // データを処理して必要な情報だけを抽出
-    const processedData = processOperatorData(req.body);
+    const processedData = processOperatorData(characterData);
     
     // データが空の場合はエラー
     if (processedData.length === 0) {
       return res.status(400).send({ error: '有効なキャラクターデータがありません' });
     }
     
-    // ユニークなIDを生成（6文字）
-    const uniqueId = await generateUniqueId();
+    let docId;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    const fiveYearsLater = admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 5) // 5年後
+    );
     
-    // Firestoreにデータを保存
-    await db.collection('characterData').doc(uniqueId).set({
-      characters: processedData,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(
-        new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 2) // 2年後
-      )
-    });
+    if (existingId) {
+      // 既存IDが提供された場合は、そのドキュメントが存在するか確認
+      const docRef = db.collection('characterData').doc(existingId);
+      const doc = await docRef.get();
+      
+      if (doc.exists) {
+        // ドキュメントが存在する場合は更新
+        await docRef.update({
+          characters: processedData,
+          updatedAt: now,
+          expiresAt: fiveYearsLater
+        });
+        docId = existingId;
+        console.log(`ID ${existingId} のデータを更新しました`);
+      } else {
+        // 指定されたIDが存在しない場合は新規作成
+        docId = await generateUniqueId();
+        await db.collection('characterData').doc(docId).set({
+          characters: processedData,
+          createdAt: now,
+          updatedAt: now,
+          expiresAt: fiveYearsLater
+        });
+        console.log(`ID ${existingId} は存在しないため、新規ID ${docId} を作成しました`);
+      }
+    } else {
+      // IDが提供されていない場合は新規作成
+      docId = await generateUniqueId();
+      await db.collection('characterData').doc(docId).set({
+        characters: processedData,
+        createdAt: now,
+        updatedAt: now,
+        expiresAt: fiveYearsLater
+      });
+      console.log(`新規ID ${docId} でデータを作成しました`);
+    }
     
-    // 生成されたIDを返す
-    return res.status(200).json({ id: uniqueId });
+    // 生成または使用されたIDを返す
+    return res.status(200).json({ id: docId });
   } catch (error) {
     console.error('データ保存エラー:', error);
     return res.status(500).send({ error: 'データの保存に失敗しました: ' + error.message });
@@ -147,6 +216,7 @@ exports.handleGetRequest = async (req, res) => {
 
 /**
  * 期限切れのデータをクリーンアップする関数
+ * 最終更新から5年経過したデータを削除
  */
 exports.cleanupExpiredData = async () => {
   try {
